@@ -42,5 +42,5 @@ export function useFavorites() {
   }
 
   // landlords cannot save rooms, everyone else can (logged out visitors are sent to sign up)
-  return { role, ids, toggle, canSave: role !== "landlord" && role !== undefined };
+  return { role, ids, toggle, canSave: role === null || role === "client" };
 }

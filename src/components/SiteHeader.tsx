@@ -50,6 +50,12 @@ export default function SiteHeader() {
             <button onClick={signOut} className={link}>Sign out</button>
           </>
         )}
+        {role === "caretaker" && (
+          <>
+            <Link href="/caretaker" className={link}>My properties</Link>
+            <button onClick={signOut} className={link}>Sign out</button>
+          </>
+        )}
         {role === "landlord" && (
           <>
             <Link href="/dashboard" className={link}>Dashboard</Link>

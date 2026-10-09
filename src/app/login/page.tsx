@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { SITE_NAME, getRole } from "@/lib/helpers";
+import { SITE_NAME, getRole, homeFor } from "@/lib/helpers";
+
+type SignupRole = "client" | "landlord" | "caretaker";
 
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const [role, setRole] = useState<"client" | "landlord">("client");
+  const [role, setRole] = useState<SignupRole>("client");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -22,12 +24,13 @@ export default function LoginPage() {
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     if (sp.get("mode") === "signup") setMode("signup");
-    if (sp.get("role") === "landlord") setRole("landlord");
+    const r = sp.get("role");
+    if (r === "landlord" || r === "caretaker") setRole(r);
   }, []);
 
   async function goHome() {
     const r = await getRole();
-    router.replace(r === "landlord" ? "/dashboard" : "/account");
+    router.replace(homeFor(r));
   }
 
   async function submit(e: React.FormEvent) {
@@ -47,8 +50,12 @@ export default function LoginPage() {
         options: { data: { full_name: fullName, phone, role } },
       });
       if (error) setError(error.message);
-      else if (data.session) await goHome();
-      else setMessage("Account created. Check your email to confirm, then log in.");
+      else if (data.session) {
+        if (role === "caretaker") router.replace("/caretaker/join");
+        else await goHome();
+      } else {
+        setMessage("Account created. Check your email to confirm, then log in.");
+      }
     }
     setLoading(false);
   }
@@ -56,7 +63,7 @@ export default function LoginPage() {
   const input =
     "w-full rounded-xl border border-sand-dark bg-white px-3 py-2 text-bark outline-none focus:border-terracotta";
   const choice = (active: boolean) =>
-    `flex-1 rounded-xl border px-3 py-3 text-sm ${
+    `rounded-xl border px-2 py-3 text-xs ${
       active ? "border-terracotta bg-sand-light font-medium" : "border-sand-dark bg-white text-bark-soft"
     }`;
 
@@ -72,14 +79,22 @@ export default function LoginPage() {
 
         {mode === "signup" && (
           <>
-            <div className="flex gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <button type="button" className={choice(role === "client")} onClick={() => setRole("client")}>
                 I am looking for a house
               </button>
               <button type="button" className={choice(role === "landlord")} onClick={() => setRole("landlord")}>
                 I am a landlord or agent
               </button>
+              <button type="button" className={choice(role === "caretaker")} onClick={() => setRole("caretaker")}>
+                I am a caretaker
+              </button>
             </div>
+            {role === "caretaker" && (
+              <p className="rounded-xl bg-sand-light p-3 text-xs text-bark-soft">
+                After signing up you will be asked for the invite code your landlord sent you.
+              </p>
+            )}
             <input className={input} placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
             <input className={input} placeholder="Phone (e.g. 0712345678)" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </>
@@ -104,6 +119,13 @@ export default function LoginPage() {
         >
           {mode === "login" ? "No account? Sign up" : "Already have an account? Log in"}
         </button>
+
+        <p className="text-center text-xs text-bark-soft">
+          Caretaker with an invite code?{" "}
+          <Link href="/caretaker/join" className="text-terracotta hover:underline">
+            Enter it here
+          </Link>
+        </p>
       </form>
     </div>
   );

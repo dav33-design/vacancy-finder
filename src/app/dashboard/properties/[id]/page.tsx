@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import PhotoManager from "@/components/PhotoManager";
+import CaretakersSection from "@/components/CaretakersSection";
+import UnitStatusButton from "@/components/UnitStatusButton";
 import { AMENITIES, UNIT_TYPES, kes } from "@/lib/helpers";
 
 type Unit = {
@@ -197,6 +199,8 @@ function PropertyPage() {
         <PhotoManager propertyId={id} />
       </section>
 
+      <CaretakersSection propertyId={id} />
+
       {/* units */}
       <section className="space-y-4">
         <h2 className="text-lg font-medium">Rooms and units</h2>
@@ -228,6 +232,7 @@ function PropertyPage() {
                   <p className="text-sm text-bark-soft">{kes(u.rent_amount)} / month</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
+<UnitStatusButton unitId={u.id} status={u.status} onDone={loadUnits} />
                   {u.status === "vacant" && (
                     <label className="flex items-center gap-2 text-sm text-bark-soft">
                       <input type="checkbox" checked={u.is_listed} onChange={() => toggleListed(u)} />

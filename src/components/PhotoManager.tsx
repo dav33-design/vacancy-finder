@@ -10,10 +10,12 @@ export default function PhotoManager({
   propertyId,
   unitId,
   max,
+  landlordId,
 }: {
   propertyId: string;
   unitId?: string;
   max?: number | null;
+  landlordId?: string; // set when a caretaker uploads on behalf of the landlord
 }) {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [busy, setBusy] = useState(false);
@@ -44,18 +46,21 @@ export default function PhotoManager({
     setBusy(true);
     setError("");
     const { data: auth } = await supabase.auth.getUser();
-    const uid = auth.user?.id;
+    const owner = landlordId ?? auth.user?.id;
 
     for (const file of files) {
       try {
         const blob = await compressImage(file);
-        const path = `${uid}/${propertyId}/${crypto.randomUUID()}.jpg`;
+        const path = `${owner}/${propertyId}/${crypto.randomUUID()}.jpg`;
         const up = await supabase.storage.from("photos").upload(path, blob, { contentType: "image/jpeg" });
         if (up.error) throw up.error;
 
-        const ins = await supabase
-          .from("photos")
-          .insert({ property_id: propertyId, unit_id: unitId ?? null, path });
+        const ins = await supabase.from("photos").insert({
+          property_id: propertyId,
+          unit_id: unitId ?? null,
+          path,
+          ...(landlordId ? { landlord_id: landlordId } : {}),
+        });
         if (ins.error) {
           await supabase.storage.from("photos").remove([path]);
           throw ins.error;
@@ -102,7 +107,7 @@ export default function PhotoManager({
         </label>
         {max != null && (
           <span className="text-sm text-bark-soft">
-            {photos.length} / {max} on your plan
+            {photos.length} / {max} on the plan
           </span>
         )}
       </div>

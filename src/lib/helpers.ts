@@ -56,7 +56,7 @@ export async function compressImage(file: File, maxSide = 1280, quality = 0.8): 
 // The town the site is for. Change it when you expand.
 export const TOWN = "Kabarnet";
 
-export type Role = "landlord" | "client" | null;
+export type Role = "landlord" | "caretaker" | "client" | null;
 
 // Who is logged in? null = nobody. Landlords have a row in the landlords table, everyone else is a client.
 export async function getRole(): Promise<Role> {
@@ -64,5 +64,12 @@ export async function getRole(): Promise<Role> {
   const user = data.user;
   if (!user) return null;
   const { data: l } = await supabase.from("landlords").select("id").eq("id", user.id).maybeSingle();
-  return l ? "landlord" : "client";
+  if (l) return "landlord";
+  const { data: c } = await supabase.from("caretakers").select("id").eq("user_id", user.id).limit(1);
+  return c && c.length > 0 ? "caretaker" : "client";
+}
+
+// Where each kind of user lands after logging in
+export function homeFor(r: Role) {
+  return r === "landlord" ? "/dashboard" : r === "caretaker" ? "/caretaker" : "/account";
 }

@@ -1,26 +1,33 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Warm, cozy palette: cream paper, soft brown text, terracotta accent, sage green */
+@theme {
+  --color-cream: #fbf5ea;
+  --color-sand-light: #f4ead8;
+  --color-sand: #e8dcc4;
+  --color-sand-dark: #d6c4a3;
+  --color-bark: #3e2f26;
+  --color-bark-soft: #7a6454;
+  --color-terracotta: #c4693d;
+  --color-terracotta-dark: #a8532c;
+  --color-sage-light: #dde8d2;
+  --color-sage-dark: #4c6a3c;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-bark);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--color-terracotta);
+  color: white;
 }
